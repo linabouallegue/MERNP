@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Configurer l'URL de base selon l'environnement
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -119,5 +120,31 @@ export const getCompanyById = async (id) => {
   const response = await api.get(`/companies/${id}`);
   return response.data;
 };
+
+// ═══════════════════════════════════════════════════
+// STATISTIQUES
+// ═══════════════════════════════════════════════════
+
+export const getGlobalStats = async () => {
+  const response = await api.get('/internships/stats/all');
+  return response.data;
+};
+
+// AI SERVICES
+export const generateAIDescription = async (data) => {
+  const response = await api.post('/ai/generate-description', data);
+  return response.data;
+};
+
+export const optimizeAICoverLetter = async (data) => {
+  const response = await api.post('/ai/optimize-cover-letter', data);
+  return response.data;
+};
+
+export const chatWithAI = async (data) => {
+  const response = await api.post('/ai/chat', data);
+  return response.data;
+};
+
 
 export default api;

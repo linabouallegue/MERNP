@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
-    
+
     if (token) {
       try {
         const response = await getCurrentUser();
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       }
     }
-    
+
     setLoading(false);
   };
 
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {loading ? null : children}
     </AuthContext.Provider>
   );
 };

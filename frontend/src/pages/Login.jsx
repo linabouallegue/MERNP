@@ -1,65 +1,84 @@
-// src/components/Login.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';  // Importation du hook d'authentification
-import './Auth.css'; // Assurez-vous que le CSS est bien importé
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { login as loginService } from '../services/api';
 
 const Login = () => {
-  const { login } = useAuth();  // Récupère la fonction login du contexte
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');  // Pour afficher des erreurs de validation
-  const [loading, setLoading] = useState(false);  // Pour afficher un indicateur de chargement pendant la requête
-  const navigate = useNavigate();  // Utilisation de useNavigate pour rediriger après la connexion
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation simple
-    if (!email || !password) {
-      setError('Please fill in both fields');
-      return;
-    }
-
-    setLoading(true); // Afficher un indicateur de chargement
+    setError('');
+    setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-
-      if (response.data) {
-        login(response.data); // Enregistre l'utilisateur dans le contexte
-        navigate('/'); // Redirige vers la page d'accueil après la connexion
+      const data = await loginService({ email, password });
+      if (data.success) {
+        login(data.token, data.user);
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Échec de la connexion');
       }
-    } catch (error) {
-      setError('Login failed. Please check your credentials.');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Identifiants incorrects ou erreur serveur');
     } finally {
-      setLoading(false); // Cacher l'indicateur de chargement après la requête
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <h1>Login</h1>
-      {error && <p className="error-message">{error}</p>}  {/* Affichage des erreurs */}
-      <form onSubmit={handleSubmit}>
-        <label>Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <label>Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={loading}>Login</button>  {/* Désactiver le bouton pendant le chargement */}
-        {loading && <p>Loading...</p>}  {/* Affichage d'un message pendant le chargement */}
-      </form>
+    <div className="auth-page">
+      <div className="auth-card glass">
+        <div className="auth-header">
+          <h1>Bon Retour ! 👋</h1>
+          <p>Connectez-vous pour accéder à votre espace</p>
+        </div>
+
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label>Email Professionnel / Étudiant</label>
+            <input
+              type="email"
+              placeholder="votre@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Mot de Passe</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {loading ? 'Connexion en cours...' : 'Se Connecter'}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>Pas encore de compte ?</p>
+          <div className="register-links">
+            <Link to="/register/student">S'inscrire comme Étudiant</Link>
+            <span>ou</span>
+            <Link to="/register/company">S'inscrire comme Entreprise</Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

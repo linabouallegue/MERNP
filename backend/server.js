@@ -19,11 +19,12 @@ mongoose.connect(process.env.MONGO_URI)
 // ═══════════════════════════════════════════════════
 // IMPORTER TOUTES LES ROUTES
 // ═══════════════════════════════════════════════════
-const authRoutes = require('./routes/auth');
-const studentRoutes = require('./routes/students');
-const companyRoutes = require('./routes/companies');
-const internshipRoutes = require('./routes/internships');
-const applicationRoutes = require('./routes/applications');
+const authRoutes = require('./routes/authRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const companyRoutes = require('./routes/companyRoutes');
+const internshipRoutes = require('./routes/internshipRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // ═══════════════════════════════════════════════════
 // UTILISER LES ROUTES
@@ -33,6 +34,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/internships', internshipRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ═══════════════════════════════════════════════════
 // ROUTE RACINE : DOCUMENTATION API
@@ -82,3 +84,8 @@ app.get('/', (req, res) => {
   });
 });
 
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+});

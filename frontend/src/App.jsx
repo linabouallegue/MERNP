@@ -14,7 +14,9 @@ import Dashboard from './pages/Dashboard';
 import InternshipsList from './pages/InternshipsList';
 import InternshipDetails from './pages/InternshipDetails';
 import MyApplications from './pages/MyApplications';
+import CompanyApplications from './pages/CompanyApplications';
 import CreateInternship from './pages/CreateInternship';
+import AIAssistant from './pages/AIAssistant';
 import NotFound from './pages/NotFound';
 
 import './App.css';
@@ -53,12 +55,30 @@ function App() {
             }
           />
 
+          <Route
+            path="/ai-assistant"
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <AIAssistant />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Routes entreprises uniquement */}
           <Route
             path="/create-internship"
             element={
               <ProtectedRoute allowedRoles={['company']}>
                 <CreateInternship />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/applications"
+            element={
+              <ProtectedRoute allowedRoles={['company']}>
+                <CompanyApplications />
               </ProtectedRoute>
             }
           />

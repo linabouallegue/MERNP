@@ -1,157 +1,150 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllInternships } from '../services/api';
-import './Home.css';
+import { getAllInternships, getGlobalStats } from '../services/api';
+
 
 const Home = () => {
   const [internships, setInternships] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats] = useState({
-    totalInternships: 0,
-    totalCompanies: 50,
-    totalStudents: 200
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    byField: [],
+    byType: []
   });
 
   useEffect(() => {
-    fetchRecentInternships();
+    fetchData();
   }, []);
 
-  const fetchRecentInternships = async () => {
+  const fetchData = async () => {
     try {
-      const response = await getAllInternships();
-      setInternships(response.data.slice(0, 6));
+      const [internshipsRes, statsRes] = await Promise.all([
+        getAllInternships({ limit: 6 }),
+        getGlobalStats()
+      ]);
+
+      if (internshipsRes.success) setInternships(internshipsRes.data.slice(0, 6));
+      if (statsRes.success) setStats(statsRes.data);
     } catch (error) {
-      console.error('Erreur chargement stages:', error);
+      console.error('Erreur chargement données:', error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="home">
+    <div className="home-page">
       <section className="hero">
-        <div className="hero-content">
-          <h1>🎓 Trouvez le Stage de vos Rêves</h1>
-          <p className="hero-subtitle">
-            La plateforme qui connecte les étudiants tunisiens avec les meilleures entreprises
-          </p>
-          <div className="hero-buttons">
-            <Link to="/internships" className="btn btn-primary btn-lg">
-              Voir les Stages
-            </Link>
-            <Link to="/register/student" className="btn btn-secondary btn-lg">
-              Commencer Gratuitement
-            </Link>
+        <div className="container">
+          <div className="hero-content fadeIn">
+            <span className="badge">✨ #1 Plateforme de Stages en Tunisie</span>
+            <h1>Trouvez le Stage de <br /><span className="text-gradient">vos Rêves</span></h1>
+            <p className="hero-subtitle">
+              Connectez-vous avec les leaders de l'industrie et propulsez votre carrière
+              grâce à des opportunités exclusives.
+            </p>
+            <div className="hero-buttons">
+              <Link to="/internships" className="btn btn-primary btn-lg">
+                Explorer les Offres
+              </Link>
+              <Link to="/register/student" className="btn btn-outline btn-lg">
+                Créer un Profil
+              </Link>
+            </div>
           </div>
-        </div>
-        
-        <div className="hero-stats">
-          <div className="stat-card">
-            <h3>{stats.totalInternships}+</h3>
-            <p>Stages Disponibles</p>
-          </div>
-          <div className="stat-card">
-            <h3>{stats.totalCompanies}+</h3>
-            <p>Entreprises Partenaires</p>
-          </div>
-          <div className="stat-card">
-            <h3>{stats.totalStudents}+</h3>
-            <p>Étudiants Inscrits</p>
+
+          <div className="hero-stats-grid">
+            <div className="stat-item glass">
+              <div className="stat-value">{stats.total || '250'}+</div>
+              <div className="stat-label">Offres Publiées</div>
+            </div>
+            <div className="stat-item glass">
+              <div className="stat-value">50+</div>
+              <div className="stat-label">Entreprises</div>
+            </div>
+            <div className="stat-item glass">
+              <div className="stat-value">2k+</div>
+              <div className="stat-label">Étudiants</div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="recent-internships">
+      <section className="featured-section container">
         <div className="section-header">
-          <h2>🔥 Stages Récents</h2>
-          <Link to="/internships" className="view-all">
+          <div>
+            <h2>🔥 Dernières Opportunités</h2>
+            <p>Stages récemment publiés par nos partenaires</p>
+          </div>
+          <Link to="/internships" className="btn btn-outline btn-sm">
             Voir tout →
           </Link>
         </div>
 
         {loading ? (
-          <div className="loading">Chargement des stages...</div>
+          <div className="loading-grid">
+            {[1, 2, 3].map(i => <div key={i} className="skeleton-card glass" />)}
+          </div>
         ) : internships.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state glass">
             <p>📭 Aucun stage disponible pour le moment</p>
           </div>
         ) : (
           <div className="internships-grid">
             {internships.map((internship) => (
-              <div key={internship._id} className="internship-card">
-                <div className="card-header">
-                  <img 
-                    src={internship.companyId?.logoUrl || 'https://via.placeholder.com/100'} 
-                    alt={internship.companyId?.companyName}
-                    className="company-logo"
-                  />
-                  <div className="card-title">
-                    <h3>{internship.title}</h3>
-                    <p className="company-name">
-                      {internship.companyId?.companyName || 'Entreprise'}
-                    </p>
+              <div key={internship._id} className="internship-card glass">
+                <div className="card-top">
+                  <div className="company-info">
+                    <img
+                      src={internship.companyId?.logoUrl || 'https://via.placeholder.com/60'}
+                      alt={internship.companyId?.companyName}
+                      className="company-logo"
+                    />
+                    <div>
+                      <h3>{internship.title}</h3>
+                      <p>{internship.companyId?.companyName || 'Entreprise'}</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="card-tags">
-                  <span className="tag tag-field">{internship.field}</span>
-                  <span className="tag tag-type">{internship.type}</span>
+                <div className="card-body">
+                  <div className="tags">
+                    <span className="tag">{internship.field}</span>
+                    <span className="tag-outline">{internship.type}</span>
+                  </div>
+                  <p>{internship.description.substring(0, 100)}...</p>
                 </div>
-
-                <p className="internship-description">
-                  {internship.description.substring(0, 100)}...
-                </p>
 
                 <div className="card-footer">
-                  <span className="duration">📅 {internship.duration} mois</span>
-                  <span className="location">📍 {internship.location?.city || 'À distance'}</span>
+                  <div className="meta">
+                    <span>📍 {internship.location?.city || 'Tunis'}</span>
+                    <span>📅 {internship.duration} mois</span>
+                  </div>
+                  <Link to={`/internships/${internship._id}`} className="btn btn-primary btn-sm">
+                    Détails
+                  </Link>
                 </div>
-
-                <Link to={`/internships/${internship._id}`} className="btn btn-outline btn-block">
-                  Voir Détails
-                </Link>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <section className="how-it-works">
-        <h2>💡 Comment ça marche ?</h2>
-        <div className="steps">
-          <div className="step">
-            <div className="step-number">1</div>
-            <h3>Créez votre compte</h3>
-            <p>Inscription gratuite en quelques secondes</p>
-          </div>
-          <div className="step">
-            <div className="step-number">2</div>
-            <h3>Parcourez les offres</h3>
-            <p>Des centaines de stages disponibles</p>
-          </div>
-          <div className="step">
-            <div className="step-number">3</div>
-            <h3>Postulez facilement</h3>
-            <p>Envoyez votre candidature en un clic</p>
-          </div>
-          <div className="step">
-            <div className="step-number">4</div>
-            <h3>Décrochez votre stage</h3>
-            <p>Les entreprises vous contactent directement</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="cta">
-        <h2>🚀 Prêt à commencer ?</h2>
-        <p>Rejoignez des milliers d'étudiants qui ont trouvé leur stage idéal</p>
-        <div className="cta-buttons">
-          <Link to="/register/student" className="btn btn-white btn-lg">
-            Je suis Étudiant
-          </Link>
-          <Link to="/register/company" className="btn btn-outline-white btn-lg">
-            Je suis Entreprise
-          </Link>
+      <section className="how-it-works container">
+        <h2 className="text-center">Simple & Rapide ⚡</h2>
+        <div className="steps-grid">
+          {[
+            { n: '01', t: 'Créez Profil', d: 'Mettez en avant vos compétences' },
+            { n: '02', t: 'Postulez', d: 'En un clic aux meilleures offres' },
+            { n: '03', t: 'Décrochez', d: 'Passez vos entretiens sereinement' }
+          ].map((step, i) => (
+            <div key={i} className="step-card glass">
+              <span className="step-num">{step.n}</span>
+              <h3>{step.t}</h3>
+              <p>{step.d}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>
